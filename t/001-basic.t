@@ -14,6 +14,8 @@ BEGIN {
     my $o = \(my $x);
     P5opaque::initialize_instance($o);
 
+    ok($o, '... need a test in here');
+
     ok(!P5opaque::has_events($o), '... no events yet');
 
     my $test       = 0;
@@ -34,6 +36,7 @@ BEGIN {
 
     P5opaque::fire($o, 'test');
     is($test, 1, '... test event was not fired again');
+
 }
 
 {
@@ -62,7 +65,6 @@ BEGIN {
     is($tests[$_], 3, '... test ('.$_.') event has not been fired')
         foreach 0 .. 10;
 }
-
 
 done_testing;
 
