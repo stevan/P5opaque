@@ -35,9 +35,7 @@ BEGIN {
 
     my $test_event = sub {
         my $o = shift;
-        my $x = P5opaque::slots::get($o, "test");
-        P5opaque::slots::set($o, "test", $x + 1);
-        return;
+        P5opaque::slots::set($o, "test", P5opaque::slots::get($o, "test") + 1);
     };
 
     P5opaque::events::bind($o, 'test', $test_event);
