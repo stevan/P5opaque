@@ -26,12 +26,18 @@ BEGIN {
 
     ok(!P5opaque::events::has_events($o), '... no events yet');
 
+    warn("?? PERL");
     P5opaque::slots::set($o, "test", 0);
+    warn("?? PERL");
     ok(P5opaque::slots::has($o, "test"), '... have a value at slot "test" now');
 
     my $test_event = sub {
-        my $x = P5opaque::slots::get($_[0], "test");
-        P5opaque::slots::set($_[0], "test", $x + 1);
+        my $o = shift;
+        my $x = P5opaque::slots::get($o, "test");
+        warn(">> PERL");
+        Dump($x);
+        warn("<< PERL");
+        P5opaque::slots::set($o, "test", $x + 1);
         return;
     };
 
@@ -50,11 +56,13 @@ BEGIN {
 
     P5opaque::events::fire($o, 'test');
     is(P5opaque::slots::get($o, "test"), 1, '... test event was not fired again');
-
 }
+
+=pod
 
 {
     my $o = P5opaque::newOV();
+    Dump($o);
 
     ok(!P5opaque::events::has_events($o), '... no events yet');
 
@@ -78,6 +86,7 @@ BEGIN {
     is($tests[$_], 3, '... test ('.$_.') event has not been fired')
         foreach 0 .. 10;
 }
+=cut
 
 done_testing;
 
