@@ -55,11 +55,8 @@ BEGIN {
     is(P5opaque::slots::get($o, "test"), 1, '... test event was not fired again');
 }
 
-=pod
-
 {
     my $o = P5opaque::newOV();
-    Dump($o);
 
     ok(!P5opaque::events::has_events($o), '... no events yet');
 
@@ -83,7 +80,7 @@ BEGIN {
     is($tests[$_], 3, '... test ('.$_.') event has not been fired')
         foreach 0 .. 10;
 }
-=cut
+
 
 done_testing;
 
