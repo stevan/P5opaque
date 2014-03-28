@@ -5,6 +5,7 @@ use warnings;
 
 use Test::More;
 use Data::Dumper qw[ Dumper ];
+use Devel::Peek;
 
 BEGIN {
     use_ok('P5opaque')
@@ -12,38 +13,50 @@ BEGIN {
 
 {
     my $o = \(my $x);
-    P5opaque::initialize_instance($o);
+    P5opaque::newOVrv($o);
 
     ok($o, '... need a test in here');
 
-    ok(!P5opaque::has_events($o), '... no events yet');
+    ok(!P5opaque::slots::has($o, "foo"), '... no value at slot "foo"');
 
-    my $test       = 0;
-    my $test_event = sub { $test++ };
+    #P5opaque::slots::set($o, "foo", 10);
+    #ok(P5opaque::slots::has($o, "foo"), '... have a value at slot "foo" now');
 
-    P5opaque::bind($o, 'test', $test_event);
+    #is(P5opaque::slots::get($o, "foo"), 10, '... got the correct value for slot "foo"');
 
-    ok(P5opaque::has_events($o), '... have events now');
-    is($test, 0, '... test event has not been fired');
+    ok(!P5opaque::events::has_events($o), '... no events yet');
 
-    P5opaque::fire($o, 'test');
+    P5opaque::slots::set($o, "test", 0);
+    ok(P5opaque::slots::has($o, "test"), '... have a value at slot "test" now');
 
-    is($test, 1, '... test event has been fired');
+    my $test_event = sub {
+        my $x = P5opaque::slots::get($_[0], "test");
+        P5opaque::slots::set($_[0], "test", $x + 1);
+        return;
+    };
 
-    P5opaque::unbind($o, 'test', $test_event);
+    P5opaque::events::bind($o, 'test', $test_event);
 
-    ok(!P5opaque::has_events($o), '... no events anymore');
+    ok(P5opaque::events::has_events($o), '... have events now');
+    is(P5opaque::slots::get($o, "test"), 0, '... test event has not been fired');
 
-    P5opaque::fire($o, 'test');
-    is($test, 1, '... test event was not fired again');
+    P5opaque::events::fire($o, 'test');
+
+    is(P5opaque::slots::get($o, "test"), 1, '... test event has been fired');
+
+    P5opaque::events::unbind($o, 'test', $test_event);
+
+    ok(!P5opaque::events::has_events($o), '... no events anymore');
+
+    P5opaque::events::fire($o, 'test');
+    is(P5opaque::slots::get($o, "test"), 1, '... test event was not fired again');
 
 }
 
 {
-    my $o = \(my $x);
-    P5opaque::initialize_instance($o);
+    my $o = P5opaque::newOV();
 
-    ok(!P5opaque::has_events($o), '... no events yet');
+    ok(!P5opaque::events::has_events($o), '... no events yet');
 
     my @tests;
     my @events;
@@ -51,16 +64,16 @@ BEGIN {
         $tests[$i]  = 0;
         $events[$i] = sub { $tests[$i]++ };
 
-        P5opaque::bind($o, 'test', $events[$i]);
+        P5opaque::events::bind($o, 'test', $events[$i]);
     }
 
-    ok(P5opaque::has_events($o), '... have events now');
+    ok(P5opaque::events::has_events($o), '... have events now');
     is($tests[$_], 0, '... test ('.$_.') event has not been fired')
         foreach 0 .. 10;
 
-    P5opaque::fire($o, 'test');
-    P5opaque::fire($o, 'test');
-    P5opaque::fire($o, 'test');
+    P5opaque::events::fire($o, 'test');
+    P5opaque::events::fire($o, 'test');
+    P5opaque::events::fire($o, 'test');
 
     is($tests[$_], 3, '... test ('.$_.') event has not been fired')
         foreach 0 .. 10;
