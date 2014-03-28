@@ -81,6 +81,17 @@ BEGIN {
         foreach 0 .. 10;
 }
 
+{
+    my $s = P5opaque::newOV();
+    is(ref($s), 'SCALAR', '... got a SCALAR ref instance');
+
+    my $h = P5opaque::newOVhv();
+    is(ref($h), 'HASH', '... got a HASH ref instance');
+
+    my $a = P5opaque::newOVav();
+    is(ref($a), 'ARRAY', '... got an ARRAY ref instance');
+}
+
 
 done_testing;
 

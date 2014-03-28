@@ -62,23 +62,6 @@ static I32* new_uuid() {
  * -----------------------------------------------------
  * ***************************************************** */
 
-#define newOV() THX_newOV(aTHX)
-SV* THX_newOV(pTHX) {
-    SV* object;
-    OV* opaque;
-
-    object = newRV_noinc(newSV(0));
-
-    Newx(opaque, 1, OV);
-    opaque->id        = new_uuid();
-    opaque->slots     = newHV();
-    opaque->callbacks = newHV();
-
-    sv_magicext(SvRV(object), NULL, PERL_MAGIC_ext, &OV_vtbl, (char*) opaque, 0);
-
-    return object;
-}
-
 #define newOVrv(object) THX_newOVrv(aTHX_ object)
 void THX_newOVrv(pTHX_ SV* object) {
     assert(object != NULL);
@@ -92,6 +75,27 @@ void THX_newOVrv(pTHX_ SV* object) {
     opaque->callbacks = newHV();
 
     sv_magicext(SvRV(object), NULL, PERL_MAGIC_ext, &OV_vtbl, (char*) opaque, 0);
+}
+
+#define newOV() THX_newOV(aTHX)
+SV* THX_newOV(pTHX) {
+    SV* object = newRV_noinc(newSV(0));
+    newOVrv(object);
+    return object;
+}
+
+#define newOVhv() THX_newOVhv(aTHX)
+SV* THX_newOVhv(pTHX) {
+    SV* object = newRV_noinc((SV*) newHV());
+    newOVrv(object);
+    return object;
+}
+
+#define newOVav() THX_newOVav(aTHX)
+SV* THX_newOVav(pTHX) {
+    SV* object = newRV_noinc((SV*) newAV());
+    newOVrv(object);
+    return object;
 }
 
 #define freeOV(opaque) THX_freeOV(aTHX_ opaque)
@@ -295,12 +299,18 @@ static AV* fetch_events_by_name (HV* callbacks, SV* event_name) {
 
 MODULE = P5opaque		PACKAGE = P5opaque
 
-SV*
-newOV();
-
 void
 newOVrv(object)
     SV* object;
+
+SV*
+newOV();
+
+SV*
+newOVhv();
+
+SV*
+newOVav();
 
 MODULE = P5opaque       PACKAGE = P5opaque::slots
 
