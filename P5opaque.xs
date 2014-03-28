@@ -98,8 +98,6 @@ void THX_newOVrv(pTHX_ SV* object) {
 void THX_freeOV(pTHX_ OV* opaque) {
     assert(opaque != NULL);
 
-    warn("HEY FOLKS!");
-
     hv_undef(opaque->slots);
     hv_undef(opaque->callbacks);
 
@@ -118,10 +116,7 @@ void THX_freeOV(pTHX_ OV* opaque) {
 SV* THX_get_at_slot(pTHX_ SV* object, SV* slot_name) {
     OV* opaque     = SV_to_OV(object);
     HE* slot_entry = hv_fetch_ent(opaque->slots, slot_name, 0, 0);
-    fprintf(stderr, ">> GET XS\n");
-    sv_dump(HeVAL(slot_entry));
-    fprintf(stderr, "<< GET XS\n");
-    return slot_entry == NULL ? newSV(0) : HeVAL(slot_entry);
+    return slot_entry == NULL ? newSV(0) : SvREFCNT_inc(HeVAL(slot_entry));
 }
 
 #define set_at_slot(object, slot_name, slot_value) THX_set_at_slot(aTHX_ object, slot_name, slot_value)
@@ -129,9 +124,6 @@ void THX_set_at_slot(pTHX_ SV* object, SV* slot_name, SV* slot_value) {
     OV* opaque = SV_to_OV(object);
     SvREFCNT_inc(slot_value);
     (void)hv_store_ent(opaque->slots, slot_name, slot_value, 0);
-    fprintf(stderr, ">> SET XS\n");
-    sv_dump(slot_value);
-    fprintf(stderr, "<< SET XS\n");
 }
 
 #define has_at_slot(object, slot_name) THX_has_at_slot(aTHX_ object, slot_name)

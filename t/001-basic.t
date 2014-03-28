@@ -19,24 +19,23 @@ BEGIN {
 
     ok(!P5opaque::slots::has($o, "foo"), '... no value at slot "foo"');
 
-    #P5opaque::slots::set($o, "foo", 10);
-    #ok(P5opaque::slots::has($o, "foo"), '... have a value at slot "foo" now');
+    P5opaque::slots::set($o, "foo", 10);
+    ok(P5opaque::slots::has($o, "foo"), '... have a value at slot "foo" now');
 
-    #is(P5opaque::slots::get($o, "foo"), 10, '... got the correct value for slot "foo"');
+    is(P5opaque::slots::get($o, "foo"), 10, '... got the correct value for slot "foo"');
+
+    ok(!P5opaque::slots::has($o, "bar"), '... no value at slot "bar"');
+    is(P5opaque::slots::get($o, "bar"), undef, '... got the correct value for slot "bar"');
+    ok(!P5opaque::slots::has($o, "bar"), '... still no value at slot "bar"');
 
     ok(!P5opaque::events::has_events($o), '... no events yet');
 
-    warn("?? PERL");
     P5opaque::slots::set($o, "test", 0);
-    warn("?? PERL");
     ok(P5opaque::slots::has($o, "test"), '... have a value at slot "test" now');
 
     my $test_event = sub {
         my $o = shift;
         my $x = P5opaque::slots::get($o, "test");
-        warn(">> PERL");
-        Dump($x);
-        warn("<< PERL");
         P5opaque::slots::set($o, "test", $x + 1);
         return;
     };
