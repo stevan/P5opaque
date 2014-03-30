@@ -13,7 +13,7 @@ BEGIN {
 
 {
     my $o = \(my $x);
-    P5opaque::newOVrv($o);
+    P5opaque::newMopIVrv($o);
 
     ok($o, '... need a test in here');
 
@@ -56,7 +56,7 @@ BEGIN {
 }
 
 {
-    my $o = P5opaque::newOV();
+    my $o = P5opaque::newMopIV();
 
     ok(!P5opaque::events::has_events($o), '... no events yet');
 
@@ -82,13 +82,13 @@ BEGIN {
 }
 
 {
-    my $s = P5opaque::newOV();
+    my $s = P5opaque::newMopIV();
     is(ref($s), 'SCALAR', '... got a SCALAR ref instance');
 
-    my $h = P5opaque::newOVhv();
+    my $h = P5opaque::newMopIVhv();
     is(ref($h), 'HASH', '... got a HASH ref instance');
 
-    my $a = P5opaque::newOVav();
+    my $a = P5opaque::newMopIVav();
     is(ref($a), 'ARRAY', '... got an ARRAY ref instance');
 }
 

@@ -4,22 +4,22 @@
 #include "XSUB.h"
 
 /* *****************************************************
- * P5oqaque OV structs and magic vtable
+ * P5oqaque MopIV structs and magic vtable
  * ***************************************************** */
 
 typedef struct {
     I32* id;
     HV*  slots;
     HV*  callbacks;
-} OV;
+} MopIV;
 
-static int mg_free_OV(pTHX_ SV *sv, MAGIC *mg);
-static MGVTBL OV_vtbl = {
+static int mg_freeMopIV(pTHX_ SV *sv, MAGIC *mg);
+static MGVTBL MopIV_vtbl = {
     NULL,       /* get */
     NULL,       /* set */
     NULL,       /* len */
     NULL,       /* clear */
-    mg_free_OV, /* free */
+    mg_freeMopIV, /* free */
     NULL,       /* copy */
     NULL,       /* dup */
     NULL        /* local */
@@ -29,7 +29,7 @@ static MGVTBL OV_vtbl = {
  * predeclare some internal functions
  * ***************************************************** */
 
-static OV* SV_to_OV(SV* object);
+static MopIV* SV_to_MopIV(SV* object);
 static AV* fetch_events_by_name (HV* callbacks, SV* event_name);
 
 /* *****************************************************
@@ -62,44 +62,44 @@ static I32* new_uuid() {
  * -----------------------------------------------------
  * ***************************************************** */
 
-#define newOVrv(object) THX_newOVrv(aTHX_ object)
-void THX_newOVrv(pTHX_ SV* object) {
+#define newMopIVrv(object) THX_newMopIVrv(aTHX_ object)
+void THX_newMopIVrv(pTHX_ SV* object) {
     assert(object != NULL);
     assert(SvTYPE(object) == SVt_RV); // we only accept references here
 
-    OV* opaque;
+    MopIV* opaque;
 
-    Newx(opaque, 1, OV);
+    Newx(opaque, 1, MopIV);
     opaque->id        = new_uuid();
     opaque->slots     = newHV();
     opaque->callbacks = newHV();
 
-    sv_magicext(SvRV(object), NULL, PERL_MAGIC_ext, &OV_vtbl, (char*) opaque, 0);
+    sv_magicext(SvRV(object), NULL, PERL_MAGIC_ext, &MopIV_vtbl, (char*) opaque, 0);
 }
 
-#define newOV() THX_newOV(aTHX)
-SV* THX_newOV(pTHX) {
+#define newMopIV() THX_newMopIV(aTHX)
+SV* THX_newMopIV(pTHX) {
     SV* object = newRV_noinc(newSV(0));
-    newOVrv(object);
+    newMopIVrv(object);
     return object;
 }
 
-#define newOVhv() THX_newOVhv(aTHX)
-SV* THX_newOVhv(pTHX) {
+#define newMopIVhv() THX_newMopIVhv(aTHX)
+SV* THX_newMopIVhv(pTHX) {
     SV* object = newRV_noinc((SV*) newHV());
-    newOVrv(object);
+    newMopIVrv(object);
     return object;
 }
 
-#define newOVav() THX_newOVav(aTHX)
-SV* THX_newOVav(pTHX) {
+#define newMopIVav() THX_newMopIVav(aTHX)
+SV* THX_newMopIVav(pTHX) {
     SV* object = newRV_noinc((SV*) newAV());
-    newOVrv(object);
+    newMopIVrv(object);
     return object;
 }
 
-#define freeOV(opaque) THX_freeOV(aTHX_ opaque)
-void THX_freeOV(pTHX_ OV* opaque) {
+#define freeMopIV(opaque) THX_freeMopIV(aTHX_ opaque)
+void THX_freeMopIV(pTHX_ MopIV* opaque) {
     assert(opaque != NULL);
 
     hv_undef(opaque->slots);
@@ -118,21 +118,21 @@ void THX_freeOV(pTHX_ OV* opaque) {
 
 #define get_at_slot(object, slot_name) THX_get_at_slot(aTHX_ object, slot_name)
 SV* THX_get_at_slot(pTHX_ SV* object, SV* slot_name) {
-    OV* opaque     = SV_to_OV(object);
+    MopIV* opaque     = SV_to_MopIV(object);
     HE* slot_entry = hv_fetch_ent(opaque->slots, slot_name, 0, 0);
     return slot_entry == NULL ? newSV(0) : SvREFCNT_inc(HeVAL(slot_entry));
 }
 
 #define set_at_slot(object, slot_name, slot_value) THX_set_at_slot(aTHX_ object, slot_name, slot_value)
 void THX_set_at_slot(pTHX_ SV* object, SV* slot_name, SV* slot_value) {
-    OV* opaque = SV_to_OV(object);
+    MopIV* opaque = SV_to_MopIV(object);
     SvREFCNT_inc(slot_value);
     (void)hv_store_ent(opaque->slots, slot_name, slot_value, 0);
 }
 
 #define has_at_slot(object, slot_name) THX_has_at_slot(aTHX_ object, slot_name)
 bool THX_has_at_slot(pTHX_ SV* object, SV* slot_name) {
-    OV* opaque = SV_to_OV(object);
+    MopIV* opaque = SV_to_MopIV(object);
     return hv_exists_ent(opaque->slots, slot_name, 0);
 }
 
@@ -140,7 +140,7 @@ bool THX_has_at_slot(pTHX_ SV* object, SV* slot_name) {
 
 #define has_events(object) THX_has_events(aTHX_ object)
 SV* THX_has_events(pTHX_ SV* object) {
-    OV* opaque = SV_to_OV(object);
+    MopIV* opaque = SV_to_MopIV(object);
     return newSViv(HvKEYS(opaque->callbacks));
 }
 
@@ -149,10 +149,10 @@ void THX_bind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
     assert(SvTYPE(callback) == SVt_RV);
     assert(SvTYPE(SvRV(callback)) == SVt_PVCV);
 
-    OV* opaque;
+    MopIV* opaque;
     AV* events;
 
-    opaque = SV_to_OV(object);
+    opaque = SV_to_MopIV(object);
     events = fetch_events_by_name(opaque->callbacks, event_name);
 
     if (events == NULL) {
@@ -168,10 +168,10 @@ void THX_unbind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
     assert(SvTYPE(callback) == SVt_RV);
     assert(SvTYPE(SvRV(callback)) == SVt_PVCV);
 
-    OV* opaque;
+    MopIV* opaque;
     AV* events;
 
-    opaque = SV_to_OV(object);
+    opaque = SV_to_MopIV(object);
     events = fetch_events_by_name(opaque->callbacks, event_name);
 
     if (events != NULL) {
@@ -210,10 +210,10 @@ void THX_unbind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
 
 #define fire_event(object, event_name, args, args_len) THX_fire_event(aTHX_ object, event_name, args, args_len)
 void THX_fire_event(pTHX_ SV* object, SV* event_name, SV** args, I32 args_len) {
-    OV* opaque;
+    MopIV* opaque;
     AV* events;
 
-    opaque = SV_to_OV(object);
+    opaque = SV_to_MopIV(object);
     events = fetch_events_by_name(opaque->callbacks, event_name);
 
     if (events != NULL) {
@@ -253,16 +253,16 @@ void THX_fire_event(pTHX_ SV* object, SV* event_name, SV** args, I32 args_len) {
  * ***************************************************** */
 
 // magic destructor ...
-static int mg_free_OV(pTHX_ SV *sv, MAGIC *mg) {
+static int mg_freeMopIV(pTHX_ SV *sv, MAGIC *mg) {
     if (SvREFCNT(sv) == 0) {
-        freeOV((OV*) mg->mg_ptr);
+        freeMopIV((MopIV*) mg->mg_ptr);
         mg->mg_ptr = NULL;
     }
     return 0;
 }
 
 // internal instance accessor
-static OV* SV_to_OV(SV* object) {
+static MopIV* SV_to_MopIV(SV* object) {
     assert(object != NULL);
     assert(SvTYPE(object) == SVt_RV);         // the base type is a reference ...
     assert(SvTYPE(SvRV(object)) == SVt_PVMG); // once magic is added, the underlying SV is upgraded to PVMG
@@ -270,8 +270,8 @@ static OV* SV_to_OV(SV* object) {
     if (SvMAGICAL(SvRV(object))) {
         MAGIC* mg;
         for (mg = SvMAGIC(SvRV(object)); mg; mg = mg->mg_moremagic) {
-            if ((mg->mg_type == PERL_MAGIC_ext) && (mg->mg_virtual == &OV_vtbl)) {
-                return (OV*) mg->mg_ptr;
+            if ((mg->mg_type == PERL_MAGIC_ext) && (mg->mg_virtual == &MopIV_vtbl)) {
+                return (MopIV*) mg->mg_ptr;
             }
         }
     }
@@ -300,17 +300,17 @@ static AV* fetch_events_by_name (HV* callbacks, SV* event_name) {
 MODULE = P5opaque		PACKAGE = P5opaque
 
 void
-newOVrv(object)
+newMopIVrv(object)
     SV* object;
 
 SV*
-newOV();
+newMopIV();
 
 SV*
-newOVhv();
+newMopIVhv();
 
 SV*
-newOVav();
+newMopIVav();
 
 MODULE = P5opaque       PACKAGE = P5opaque::slots
 
