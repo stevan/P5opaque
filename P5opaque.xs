@@ -15,14 +15,14 @@ typedef struct {
 
 static int mg_freeMopIV(pTHX_ SV *sv, MAGIC *mg);
 static MGVTBL MopIV_vtbl = {
-    NULL,       /* get */
-    NULL,       /* set */
-    NULL,       /* len */
-    NULL,       /* clear */
-    mg_freeMopIV, /* free */
-    NULL,       /* copy */
-    NULL,       /* dup */
-    NULL        /* local */
+    NULL,         /* get   */
+    NULL,         /* set   */
+    NULL,         /* len   */
+    NULL,         /* clear */
+    mg_freeMopIV, /* free  */
+    NULL,         /* copy  */
+    NULL,         /* dup   */
+    NULL          /* local */
 };
 
 /* *****************************************************
