@@ -65,7 +65,10 @@ static I32* new_uuid() {
 #define newMopIVrv(object) THX_newMopIVrv(aTHX_ object)
 void THX_newMopIVrv(pTHX_ SV* object) {
     assert(object != NULL);
-    assert(SvTYPE(object) == SVt_RV); // we only accept references here
+
+    if (SvTYPE(object) != SVt_RV) {
+        croak("object is not a reference");
+    }
 
     MopIV* opaque;
 
@@ -146,8 +149,10 @@ SV* THX_has_events(pTHX_ SV* object) {
 
 #define bind_event(object, event_name, callback) THX_bind_event(aTHX_ object, event_name, callback)
 void THX_bind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
-    assert(SvTYPE(callback) == SVt_RV);
-    assert(SvTYPE(SvRV(callback)) == SVt_PVCV);
+
+    if (SvTYPE(callback) != SVt_RV || SvTYPE(SvRV(callback)) != SVt_PVCV) {
+        croak("callback is not a CODE reference");
+    }
 
     MopIV* opaque;
     AV* events;
@@ -165,8 +170,10 @@ void THX_bind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
 
 #define unbind_event(object, event_name, callback) THX_unbind_event(aTHX_ object, event_name, callback)
 void THX_unbind_event(pTHX_ SV* object, SV* event_name, SV* callback) {
-    assert(SvTYPE(callback) == SVt_RV);
-    assert(SvTYPE(SvRV(callback)) == SVt_PVCV);
+
+    if (SvTYPE(callback) != SVt_RV || SvTYPE(SvRV(callback)) != SVt_PVCV) {
+        croak("callback is not a CODE reference");
+    }
 
     MopIV* opaque;
     AV* events;
@@ -264,8 +271,10 @@ static int mg_freeMopIV(pTHX_ SV *sv, MAGIC *mg) {
 // internal instance accessor
 static MopIV* SV_to_MopIV(SV* object) {
     assert(object != NULL);
-    assert(SvTYPE(object) == SVt_RV);         // the base type is a reference ...
-    assert(SvTYPE(SvRV(object)) == SVt_PVMG); // once magic is added, the underlying SV is upgraded to PVMG
+
+    if (SvTYPE(object) != SVt_RV || SvTYPE(SvRV(object)) != SVt_PVMG) {
+        croak("object is not a magic reference");
+    }
 
     if (SvMAGICAL(SvRV(object))) {
         MAGIC* mg;
@@ -276,7 +285,7 @@ static MopIV* SV_to_MopIV(SV* object) {
         }
     }
 
-    croak("not a mop instance");
+    croak("object is not a mop instance");
 }
 
 // find/create the events array in the callbacks HV
