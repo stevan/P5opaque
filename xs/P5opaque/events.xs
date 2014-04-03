@@ -1,4 +1,4 @@
-MODULE = P5opaque       PACKAGE = P5opaque::events
+MODULE = P5opaque  PACKAGE = P5opaque::events
 
 SV*
 has_events(object)

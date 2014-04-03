@@ -1,4 +1,4 @@
-MODULE = P5opaque       PACKAGE = P5opaque::slots
+MODULE = P5opaque  PACKAGE = P5opaque::slots
 
 void
 get(object, slot_name)

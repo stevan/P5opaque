@@ -9,7 +9,7 @@
 
 /* ***************************************************** */
 
-MODULE = P5opaque       PACKAGE = P5opaque
+MODULE = P5opaque  PACKAGE = P5opaque
 
 INCLUDE: xs/P5opaque.xs
 INCLUDE: xs/P5opaque/slots.xs
