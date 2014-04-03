@@ -2,7 +2,7 @@ MYMETA.*
 Makefile
 Makefile.old
 *.bs
-*.c
+P5opaque.c
 *.o
 blib/
 pm_to_blib
