@@ -323,7 +323,7 @@ newMopIVav();
 
 MODULE = P5opaque       PACKAGE = P5opaque::slots
 
-SV*
+void
 get(object, slot_name)
     SV* object;
     SV* slot_name;
